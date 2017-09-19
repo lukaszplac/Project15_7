@@ -1,118 +1,115 @@
-class Stopwatch {
-    constructor(display, results) {
-        this.running = false;
-        this.display = display;
-        this.results = results;
-        this.reset();
-        this.print(this.times);
+//ES6 ReactElement
+class Stopwatch extends React.Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            running: false,
+            minutes: 0,
+            seconds: 0,
+            miliseconds: 0,
+            results: []
+        }
     }
 
-    reset() {
-    	this.times = {
-    		minutes: 0,
-    		seconds: 0,
-    		miliseconds: 0
-    	};
+    reset = () => {
+        this.setState({
+                minutes: 0,
+                seconds: 0,
+                miliseconds: 0      
+        })
     }
 
-    print() {
-        this.display.innerText = this.format(this.times);
-	}
+    render() {
+        const currentTime = {
+            minutes: this.state.minutes,
+            seconds: this.state.seconds,
+            miliseconds: this.state.miliseconds 
+        }
+        return (
+                <div>
+                    <nav className="controls">
+                      <a href="#" className="button" id="start" onClick={this.start}>Start</a>
+                      <a href="#" className="button" id="stop" onClick={this.stop}>Stop</a>
+                      <a href="#" className="button" id="reset" onClick={this.hardReset}>Reset</a>
+                    </nav>
+                    <div className="stopwatch">
+                        {this.format(currentTime)}
+                    </div>
+                    <ul className="results">
+                        {this.state.results.map(r => <li key={this.keyCreator(r)}>{this.format(r)}</li>)}
+                    </ul>
+                </div>
+            )
+    }
 
-	format(times) {
-        return `${pad0(times.minutes)}:${pad0(times.seconds)}:${pad0(Math.floor(times.miliseconds))}`;
-	}
+    keyCreator = (r) => {
+        let key = r.seconds.toString() + r.miliseconds.toString() + r.minutes.toString();
+        return key;
+    }
 
-	start() {
-    	if (!this.running) {
-	        this.running = true;
-	        this.watch = setInterval(() => this.step(), 10);
-    	}
-	}
+    format = (t) => {
+        return `${this.pad0(t.minutes)}:${this.pad0(t.seconds)}:${this.pad0(Math.floor(t.miliseconds))}`;
+    }
 
-	step() {
-	    if (!this.running) return;
-	    this.calculate();
-	    this.print();
-	}
+    start = () => {
+        if (!this.state.running) {
+            this.setState({running: true});
+            this.watch = setInterval(() => this.step(), 10);
+        }
+    }
 
-	calculate() {
-    this.times.miliseconds += 1;
-    if (this.times.miliseconds >= 100) {
-        this.times.seconds += 1;
-        this.times.miliseconds = 0;
-    	}
-    if (this.times.seconds >= 60) {
-        this.times.minutes += 1;
-        this.times.seconds = 0;
-    	}
-	}
+    step = () => {
+        if (!this.state.running) return;
+        this.calculate();
+    }
 
-	stop() {
-        if (this.running) this.save(this.times);
-	    this.running = false;
-	    clearInterval(this.watch);
-	}
+    calculate = () => {
+        this.setState({miliseconds: this.state.miliseconds+1});
+        if (this.state.miliseconds >= 100) {
+        this.setState({seconds: this.state.seconds+1});
+        this.setState({miliseconds: 0});
+        }
+        if (this.state.seconds >= 60) {
+        this.setState({minutes: this.state.minutes+1});
+        this.setState({seconds: 0});
+        }
+    }
 
-    hardReset() {
+    stop = () => {
+        let currentTime = {
+            minutes: this.state.minutes,
+            seconds: this.state.seconds,
+            miliseconds: this.state.miliseconds 
+        }
+        if (this.state.running) this.save(currentTime);
+        this.setState({running: false});
+        clearInterval(this.watch);
+    }
+
+    hardReset = () => {
         this.reset();
-        this.print();
         this.clearList();
-        if (this.running) this.running = false;
+        if (this.state.running) this.setState({running: false});
     }
 
-    save(t) {
-        var li = document.createElement('li');
-        var liText = document.createTextNode(`${pad0(t.minutes)}:${pad0(t.seconds)}:${pad0(Math.floor(t.miliseconds))}`);
-        li.appendChild(liText);
-        this.results.appendChild(li);
+    save = (t) => {
+        this.setState({results: [...this.state.results, t]});
     }
 
-    clearList() {
-        this.results.innerHTML = '';
+    clearList = () => {
+        this.setState({results: []});
     }
-}
 
-function pad0(value) {
+    pad0 = (value) => {
     let result = value.toString();
     if (result.length < 2) {
         result = '0' + result;
-    }
+        }
     return result;
-}
-
-const stopwatch = new Stopwatch(document.querySelector('.stopwatch'), document.querySelector('.results'));
-var startButton = document.getElementById('start');
-startButton.addEventListener('click', () => stopwatch.start());
-var stopButton = document.getElementById('stop');
-stopButton.addEventListener('click', () => stopwatch.stop());
-var resetButton = document.getElementById('reset');
-resetButton.addEventListener('click', () => stopwatch.hardReset());
-
-//ES6
-class App extends React.Component {
-
-    constructor(stopwatch) {
-        super(props);
-        this.props.stopwatch = stopwatch;
     }
 
-    static defaultProps = {
-        stopwatch: {}
-    };
-
-    static propTypes = {
-        stopwatch: React.PropTypes.number.isRequired
-    };
-
-    render() {
-        return (<div className='stopwatch'>
-
-                </div>
-            );
-    }
 }
 
-const app = new App(new Stopwatch());
-ReactDOM.render(app, document.getElementById('container'));
-
+const stopwatch = React.createElement(Stopwatch);
+ReactDOM.render(stopwatch, document.getElementById('app'));

@@ -1,3 +1,4 @@
 node_modules
 script-compiled.js
 npm-debug.log
+package-lock.json

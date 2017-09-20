@@ -27,7 +27,7 @@ class Stopwatch extends React.Component {
             miliseconds: this.state.miliseconds 
         }
         return (
-                <div>
+                <div className="container">
                     <nav className="controls">
                       <a href="#" className="button" id="start" onClick={this.start}>Start</a>
                       <a href="#" className="button" id="stop" onClick={this.stop}>Stop</a>
